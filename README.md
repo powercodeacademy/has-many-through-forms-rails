@@ -20,7 +20,7 @@ We've looked at the different ways we can interact with our associated models th
 Sometimes, it may be appropriate for a user to create an instance of our join model directly. Think back to the hospital domain from our previous lab. It makes perfect sense that a user would go to `appointments/new` and fill out a form to create a new appointment.
 
 ```erb
-<%= form_for @appointment do |f| %>
+<%= form_with model: @appointment, local: true do |f| %>
   <%= f.datetime_select :appointment_datetime %>
   <%= f.collection_select :doctor, Doctor.all, :id, :name %>
   <%= f.collection_select :patient, Patient.all, :id, :name %>
@@ -37,7 +37,7 @@ Other times, we need to be more abstract. Let's return to our blog example, but 
 ```ruby
 # app/models/post.rb
 
-class Post < ActiveRecord::Base
+class Post < ApplicationRecord
   has_many :post_categories
   has_many :categories, through: :post_categories
 end
@@ -46,7 +46,7 @@ end
 ```ruby
 # app/models/category.rb
 
-class Category < ActiveRecord::Base
+class Category < ApplicationRecord
   has_many :post_categories
   has_many :posts, through: :post_categories
 end
@@ -55,7 +55,7 @@ end
 ```ruby
 # app/models/post_category.rb
 
-class PostCategory < ActiveRecord::Base
+class PostCategory < ApplicationRecord
   belongs_to :post
   belongs_to :category
 end
@@ -68,7 +68,7 @@ Luckily, `has_many, through` functions exactly the same as a `has_many` relation
 ```erb
 # app/views/posts/_form.html.erb
 
-<%= form_for @post do |f| %>
+<%= form_with model: @post, local: true do |f| %>
   <%= f.label "Title" %>
   <%= f.text_field :title %>
   <%= f.label "Content" %>
@@ -140,7 +140,7 @@ First, we want a text field to enter the name of our new category. The value of 
 ```erb
 # app/views/posts/_form.html.erb
 
-<%= form_for @post do |f| %>
+<%= form_with model: @post, local: true do |f| %>
   <%= f.label "Title" %>
   <%= f.text_field :title %>
   <%= f.label "Content" %>
@@ -185,11 +185,10 @@ end
 Now, when we do mass assignment, our `Post` model will call a method called `categories_attributes=`. Let's add that method to our model using the `accepts_nested_attributes_for` macro.
 
 ```ruby
-class Post < ActiveRecord::Base
+class Post < ApplicationRecord
   has_many :post_categories
   has_many :categories, through: :post_categories
   accepts_nested_attributes_for :categories
-
 end
 ```
 
@@ -206,7 +205,7 @@ Voila! Just like when our models were directly related, we can now create catego
 Still, there's a problem. We're creating a new category each time, regardless of whether or not it exists. It will look pretty weird if three people type in "Super Cute!" and we get three different categories. In this case, we need to customize the way our category is created. Luckily, we can easily do this by creating our own `categories_attributes=` method.
 
 ```ruby
-class Post < ActiveRecord::Base
+class Post < ApplicationRecord
   has_many :post_categories
   has_many :categories, through: :post_categories
   # accepts_nested_attributes_for :categories
